@@ -39,6 +39,7 @@ VixTOPs permite criar **quantos tops quiser** (dinheiro, gems, kills, playtime, 
 - MaterialAdapter resolve `PLAYER_HEAD` ↔ `SKULL_ITEM:3`, `BLACK_STAINED_GLASS_PANE` ↔ `STAINED_GLASS_PANE:15`, etc.
 - Formato de valor configurável por-top (`LETTER` ou `DECIMAL`), com sufixos e separadores em `config.yml`
 - Per-NPC: `y-offset` e `line-spacing` do holograma podem ser sobrescritos individualmente
+- **Aliases de subcomandos configuráveis** em `commands.yml` (traduzir, abreviar, customizar)
 - Save debounced (5s) — spawnar muitos NPCs não causa I/O na main thread
 - Menu único e configurável com item "Sua posição" dinâmico (cabeça do player + lore com posição em cada top)
 
@@ -93,6 +94,7 @@ Quando o servidor iniciar com o loader configurado:
    - `messages.yml`
    - `tops.yml`
    - `menus.yml`
+   - `commands.yml`
    - `npcs.yml` (atualizado em runtime quando você criar NPCs)
 5. Console exibe: `[VixTOPs] Enabling VixTOPs v1.0.0`
 
@@ -331,6 +333,34 @@ main-menu:
 
 **Clicar num item de top no menu** dispara o `open-command` daquele top (definido em [tops.yml](#3-arquivos-de-configuração)). O VixTOPs não exibe o ranking — quem mostra é o comando que você configurar.
 
+### `commands.yml`
+
+Configura **aliases dos subcomandos** e **dos tipos do `/top setar`**. Útil pra traduzir para sua língua ou simplesmente abreviar.
+
+> Observação: aliases do **comando principal** (`/top`, `/tops`, `/vixtop`, `/vixtops`) são lidos do `plugin.yml` pelo Bukkit no startup e não podem ser alterados em runtime.
+
+```yaml
+subcommands:
+  setar:
+    aliases: [definir, set, criar]
+  remover:
+    aliases: [remove, deletar, delete, apagar]
+  reload:
+    aliases: [rl, recarregar]
+  help:
+    aliases: ["?", ajuda]
+
+setar-types:
+  armor:
+    aliases: [armorstand, as]
+  head:
+    aliases: [cabeca, cabeça, skull]
+  holo:
+    aliases: [hologram, holograma, lista, list]
+```
+
+A **chave** da entrada (`setar`, `remover`, etc.) também é tratada como alias — você não precisa repetir. Aliases são **case-insensitive** e funcionam tanto no comando quanto no tab-complete. Use `/top reload` pra aplicar mudanças sem restart.
+
 ### `npcs.yml`
 
 **Gerado e atualizado automaticamente** pelo plugin quando você usa `/top setar` ou `/top remover`. Você pode editar manualmente as `lines`, `hologram` ou outras propriedades de NPCs/hologramas existentes — depois faça `/top reload`.
@@ -451,10 +481,15 @@ npcs:
 
 ### Aliases do comando
 
-- Comando principal: `/tops`, `/vixtop`, `/vixtops` (além de `/top`)
-- `armor` aceita: `armor`, `armorstand`, `as`
-- `head` aceita: `head`, `cabeca`, `cabeça`, `skull`
-- `holo` aceita: `holo`, `hologram`, `holograma`, `lista`, `list`
+- Comando principal: `/tops`, `/vixtop`, `/vixtops` (além de `/top`) — fixos via plugin.yml
+- Subcomandos e tipos do `setar` — **configuráveis** em [commands.yml](#3-arquivos-de-configuração). Defaults:
+  - `setar` aceita: `setar`, `definir`, `set`, `criar`
+  - `remover` aceita: `remover`, `remove`, `deletar`, `delete`, `apagar`
+  - `reload` aceita: `reload`, `rl`, `recarregar`
+  - `help` aceita: `help`, `?`, `ajuda`
+  - `armor` aceita: `armor`, `armorstand`, `as`
+  - `head` aceita: `head`, `cabeca`, `cabeça`, `skull`
+  - `holo` aceita: `holo`, `hologram`, `holograma`, `lista`, `list`
 
 ### Comportamento de clique
 
