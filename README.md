@@ -26,8 +26,8 @@ VixTOPs permite criar **quantos tops quiser** (dinheiro, gems, kills, playtime, 
 
 ### Características principais
 
-- Multi-top (sem limite) com providers extensíveis (economia ou PlaceholderAPI)
-- Hook automático para **VixEconomias** (multi-economia) e **Vault** com prioridade configurável
+- Multi-top (sem limite) com providers extensíveis (economia, PlaceholderAPI, VixTempoOnline)
+- Hook automático para **VixEconomias** (multi-economia), **Vault** e **VixTempoOnline** (tempo online) — todos funcionam simultaneamente
 - **4 tipos de display**: NPC (player entity), ARMORSTAND (com equipamento), HEAD (cabeça flutuante) e HOLOGRAM (lista de ranking)
 - NPCs e hologramas 100% via packets — não precisa Citizens, HolographicDisplays ou DecentHolograms
 - Atualização event-driven: o holograma só re-renderiza quando o cache do top muda
@@ -242,13 +242,19 @@ Tipos de `provider`:
   - Para VixEconomias multi-economia, defina `vix-economy: coins` (ou `gems`, `tokens`, etc.)
 - **`placeholder`**: pega o valor de um placeholder do PlaceholderAPI.
   - Use `placeholder: "%statistic_player_kills%"`. Precisa PAPI instalado.
+- **`tempoonline`** (aliases: `playtime`, `tempo`): pega o top de tempo online do **VixTempoOnline**.
+  - Valor é em **segundos** internamente. O `format:` é forçado para `TIME` automaticamente — `{value}` sai como `"1 ano, 2 meses e 3 dias"`, `"3 horas e 25 minutos"`, `"5 minutos e 30 segundos"`, etc. (zeros omitidos).
+  - Requer VixTempoOnline instalado; se ausente, retorna lista vazia silenciosamente.
 
 Tipos de `format` (por-top):
 
 - **`LETTER`** (default): formato curto com sufixos. Ex: `1,5K`, `2,3M`, `999B`.
 - **`DECIMAL`**: formato completo com separadores. Ex: `1.500,00`, `1.234.567,89`.
+- **`TIME`**: trata o valor como **segundos** e formata como duração em português. Ex: `1 ano, 2 meses, 3 semanas e 4 dias`, ou `3 horas, 15 minutos e 20 segundos`. Componentes: anos, meses, semanas, dias, horas, minutos, segundos — zeros omitidos automaticamente.
 
 Você pode misturar livremente — cada top configura o seu. Os sufixos (K, M, B, T...) e separadores são globais e definidos em [config.yml](#3-arquivos-de-configuração) (`letters`, `decimal-pattern`, `decimal.*`).
+
+> **Observação**: quando `provider: tempoonline`, o `format:` é **automaticamente forçado para TIME** — independente do que o admin colocou. Não faz sentido formatar segundos como `1,5K`.
 
 Tokens disponíveis em `value-format`:
 
@@ -700,6 +706,13 @@ Detectado automaticamente. Quando presente:
 ### LuckPerms
 
 Detectado automaticamente. Quando presente, permite checar a permissão `vixtops.<top>.bypass` para jogadores **offline**. Sem ele, fallback para Bukkit (só online).
+
+### VixTempoOnline
+
+Detectado automaticamente via reflection (sem dependência de compile-time). Quando presente:
+- Top com `provider: tempoonline` fica disponível
+- Usa o `fetchTop()` nativo da API do VixTempoOnline (eficiente, vai direto no banco com cache)
+- Funciona simultaneamente com VixEconomias e Vault — um top de dinheiro e outro de tempo online no mesmo menu
 
 ### PacketEvents
 
